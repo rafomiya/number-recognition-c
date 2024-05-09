@@ -1,20 +1,4 @@
-#include <stdlib.h>
-#include <math.h>
 #include "NeuralNetwork.h"
-
-int max(int *arr, int n)
-{
-    int result = arr[0];
-    for (int i = 1; i < n; ++i)
-    {
-        if (result < arr[i])
-        {
-            result = arr[i];
-        }
-    }
-
-    return result;
-}
 
 double sigmoid(double x)
 {
@@ -85,8 +69,19 @@ NeuralNetwork *create_neural_network(int amount_layers, int *layer_sizes)
     return nn;
 }
 
-// implement cost function to receive an int (0-9) representing the right result
-// and make the sum of squared differences of with the activations of the last layer
+double cost(NeuralNetwork *nn, int result)
+{
+    double sum = 0;
+    for (int i = 0; i < nn->layers_sizes[nn->amount_layers - 1]; ++i)
+    {
+        sum += square(nn->activations[nn->amount_layers - 1][i]);
+    }
+
+    sum -= square(nn->activations[nn->amount_layers - 1][result]);
+    sum += square(nn->activations[nn->amount_layers - 1][result] - 1);
+
+    return sum;
+}
 
 // prepare to import mnist database of handwritten digits and make the image input to
 // memory vectors

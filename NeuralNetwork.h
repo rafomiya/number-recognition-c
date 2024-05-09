@@ -1,3 +1,7 @@
+#include <stdlib.h>
+#include <math.h>
+#include "utils.h"
+
 typedef struct
 {
     int layer;
@@ -13,9 +17,9 @@ typedef struct
     double ***weights;
     double **biases;
 
-    // double activations[amount_layers][max_layer_size];
-    // double weights[amount_layers][max_layer_size][max_layer_size];
-    // double biases[amount_layers][max_layer_size];
+    // activations[amount_layers][max_layer_size];
+    // weights[amount_layers][max_layer_size][max_layer_size];
+    // biases[amount_layers][max_layer_size];
 
     int max_layer_size;
 } NeuralNetwork;
