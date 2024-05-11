@@ -1,6 +1,6 @@
 #include "utils.h"
 
-int change_endian(int x) 
+int change_endian(int x)
 {
     unsigned char c1, c2, c3, c4;
 
@@ -12,7 +12,7 @@ int change_endian(int x)
     return ((int)c1 << 24) + ((int)c2 << 16) + ((int)c3 << 8) + c4;
 }
 
-int max(int *arr, int n)
+int arr_max(int *arr, int n)
 {
     int result = arr[0];
     for (int i = 1; i < n; ++i)
@@ -26,7 +26,27 @@ int max(int *arr, int n)
     return result;
 }
 
-double square(double x)
+double random()
 {
-    return x * x;
+    return ((double)rand()) / ((double)RAND_MAX);
+}
+
+void shuffle(double **arr1, double **arr2, int n)
+{
+    double *temp1;
+    double *temp2;
+
+    int j;
+    for (int i = n - 1; i > 0; --i)
+    {
+        j = rand() % (i + 1);
+
+        temp1 = arr1[j];
+        arr1[j] = arr1[i];
+        arr1[i] = temp1;
+
+        temp2 = arr2[j];
+        arr2[j] = arr2[i];
+        arr2[i] = temp2;
+    }
 }
