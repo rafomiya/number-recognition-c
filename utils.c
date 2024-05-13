@@ -12,10 +12,10 @@ int change_endian(int x)
     return ((int)c1 << 24) + ((int)c2 << 16) + ((int)c3 << 8) + c4;
 }
 
-int arr_max(int *arr, int n)
+int arr_max(int *arr, int p, int r)
 {
-    int result = arr[0];
-    for (int i = 1; i < n; ++i)
+    int result = arr[p];
+    for (int i = p + 1; i < r; ++i)
     {
         if (result < arr[i])
         {
@@ -31,10 +31,10 @@ double random()
     return ((double)rand()) / ((double)RAND_MAX);
 }
 
-void shuffle(double **arr1, double **arr2, int n)
+void shuffle(double **arr1, char *arr2, int n)
 {
     double *temp1;
-    double *temp2;
+    char temp2;
 
     int j;
     for (int i = n - 1; i > 0; --i)
