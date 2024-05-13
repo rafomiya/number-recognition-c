@@ -17,8 +17,13 @@ typedef struct
 
     // biases[l][i]: bias of the i-th neuron of the l-th layer
     double **biases;
+
+    // refers to ∂C/(∂a^(l))
+    double *current_grad_a;
+    double *previous_grad_a;
 } NeuralNetwork;
 
-void set_activation(NeuralNetwork *nn, int layer, int index);
 NeuralNetwork *create_neural_network(int amount_layers, int *layer_sizes);
-// void stochastic_gradient_descent(NeuralNetwork *nn, double training_data[][], double labels[], int n, double learning_rate, int mini_batch_size);
+void compute(NeuralNetwork *nn, double *input);
+void stochastic_gradient_descent(NeuralNetwork *nn, Dataset dataset, double learning_rate, int mini_batch_size);
+void destruct_neural_network(NeuralNetwork *nn);
