@@ -28,25 +28,5 @@ int arr_max(int *arr, int p, int r)
 
 double random()
 {
-    return ((double)rand()) / ((double)RAND_MAX);
-}
-
-void shuffle(double **arr1, char *arr2, int n)
-{
-    double *temp1;
-    char temp2;
-
-    int j;
-    for (int i = n - 1; i > 0; --i)
-    {
-        j = rand() % (i + 1);
-
-        temp1 = arr1[j];
-        arr1[j] = arr1[i];
-        arr1[i] = temp1;
-
-        temp2 = arr2[j];
-        arr2[j] = arr2[i];
-        arr2[i] = temp2;
-    }
+    return (double)rand() / (double)RAND_MAX;
 }
