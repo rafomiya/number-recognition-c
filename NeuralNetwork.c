@@ -1,19 +1,4 @@
 #include "NeuralNetwork.h"
-#define FOR_W_B(code_w, code_b)                                      \
-    do                                                               \
-    {                                                                \
-        for (int l_ = 1; l_ < nn->amount_layers; ++l_)               \
-        {                                                            \
-            for (int i_ = 0; i_ < nn->layer_sizes[l_]; ++i_)         \
-            {                                                        \
-                for (int j_ = 0; j_ < nn->layer_sizes[l_ - 1]; ++j_) \
-                {                                                    \
-                    code_w;                                          \
-                }                                                    \
-                code_b;                                              \
-            }                                                        \
-        }                                                            \
-    } while (0)
 
 double y[10][10] = {
     {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
@@ -149,9 +134,9 @@ void compute(NeuralNetwork *nn, double *input)
 
     for (int l = 1; l < nn->amount_layers; ++l)
     {
-        for (int k = 0; k < nn->layer_sizes[l]; ++k)
+        for (int i = 0; i < nn->layer_sizes[l]; ++i)
         {
-            set_activation(nn, l, k);
+            set_activation(nn, l, i);
         }
     }
 
@@ -179,114 +164,6 @@ void free_weights_and_biases(double ***weights, double **biases, int amount_laye
     free(biases);
 }
 
-void backprop_wb(NeuralNetwork *nn, int layer, double *grad_a, double ***temp_w, double **temp_b)
-{
-    for (int i = 0; i < nn->layer_sizes[layer]; ++i)
-    {
-        if (relu_prime(nn, layer, i))
-        {
-            temp_b[layer][i] = grad_a[i];
-        }
-
-        for (int j = 0; j < nn->layer_sizes[layer - 1]; ++j)
-        {
-            temp_w[layer][i][j] += temp_b[layer][i] * nn->activations[layer - 1][j];
-        }
-    }
-}
-
-void update_grad_a(NeuralNetwork *nn, int previous_layer)
-{
-    for (int i = 0; i < nn->layer_sizes[previous_layer - 1]; ++i)
-    {
-        for (int j = 0; j < nn->layer_sizes[previous_layer]; ++j)
-        {
-            nn->current_grad_a[i] = 0;
-            if (relu_prime(nn, previous_layer, j))
-            {
-                nn->current_grad_a[i] += nn->previous_grad_a[j] * nn->weights[previous_layer - 1][j][i];
-            }
-        }
-    }
-}
-
-void backpropagation(NeuralNetwork *nn, double ***temp_w, double **temp_b, char result)
-{
-    // loading grad_a_l as a^(L)
-    for (int i = 0; i < nn->layer_sizes[nn->amount_layers - 1]; ++i)
-    {
-        nn->current_grad_a[i] = 2 * (nn->activations[nn->amount_layers - 1][i] - y[result][i]);
-    }
-
-    for (int l = nn->amount_layers - 1; l > 0; --l)
-    {
-        // computes ∂C/∂w^l
-        backprop_wb(nn, l, nn->current_grad_a, temp_w, temp_b);
-
-        // previous <- current
-        swap(nn->current_grad_a, nn->previous_grad_a, double *);
-
-        // TODO thats ugly. change later
-        if (l > 1)
-        {
-            // updates ∂C/∂a^l (current <- new layer)
-            update_grad_a(nn, l);
-        }
-    }
-}
-
-// it would be nice if (mini_batch_size | n) is true. please use this function this way.
-void stochastic_gradient_descent(NeuralNetwork *nn, Dataset dataset, double learning_rate, int mini_batch_size)
-{
-    shuffle(dataset.images, dataset.labels, dataset.n);
-
-    // initializing gradient vectors
-    double ***gradient_w = malloc(nn->amount_layers * sizeof(double **));
-    double **gradient_b = malloc(nn->amount_layers * sizeof(double *));
-    for (int l = 1; l < nn->amount_layers; ++l)
-    {
-        gradient_w[l] = malloc(nn->layer_sizes[l] * sizeof(double *));
-        for (int j = 0; j < nn->layer_sizes[l]; ++j)
-        {
-            gradient_w[l][j] = calloc(nn->layer_sizes[l - 1], sizeof(double));
-        }
-
-        gradient_b[l] = calloc(nn->layer_sizes[l], sizeof(double));
-    }
-
-    // initializing temp vectors
-    double ***temp_w = malloc(nn->amount_layers * sizeof(double **));
-    double **temp_b = malloc(nn->amount_layers * sizeof(double *));
-    for (int l = 1; l < nn->amount_layers; ++l)
-    {
-        temp_w[l] = malloc(nn->layer_sizes[l] * sizeof(double *));
-        for (int j = 0; j < nn->layer_sizes[l]; ++j)
-        {
-            temp_w[l][j] = calloc(nn->layer_sizes[l - 1], sizeof(double));
-        }
-
-        temp_b[l] = calloc(nn->layer_sizes[l], sizeof(double));
-    }
-
-    for (int i = 0; i < dataset.n; i += mini_batch_size)
-    {
-        for (int j = i; j < i + mini_batch_size; ++j)
-        {
-            compute(nn, dataset.images[j]);
-            backpropagation(nn, temp_w, temp_b, dataset.labels[j]);
-
-            FOR_W_B(gradient_w[l_][i_][j_] += 1 / mini_batch_size * temp_w[l_][i_][j_], gradient_b[l_][i_] += 1 / mini_batch_size * temp_b[l_][i_]);
-        }
-        // aqui nao chegakkkkkkkkkk
-
-        update_parameters(nn, gradient_w, gradient_b, learning_rate);
-        printf("updated parameters. current at i = %d\n", i);
-    }
-
-    free_weights_and_biases(gradient_w, gradient_b, nn->amount_layers, nn->layer_sizes);
-    free_weights_and_biases(temp_w, temp_b, nn->amount_layers, nn->layer_sizes);
-}
-
 void destruct_neural_network(NeuralNetwork *nn)
 {
     for (int l = 1; l < nn->amount_layers; ++l)
@@ -300,4 +177,110 @@ void destruct_neural_network(NeuralNetwork *nn)
 
     free_weights_and_biases(nn->weights, nn->biases, nn->amount_layers, nn->layer_sizes);
     free(nn);
+}
+
+//
+//
+// linha divisora entre (certo /\) e (errado \/)
+//
+//
+
+void backprop_wb(NeuralNetwork *nn, int layer, double *grad_a, double ***gradient_w, double **gradient_b, int mini_batch_size)
+{
+    double b_increment;
+    for (int i = 0; i < nn->layer_sizes[layer]; ++i)
+    {
+        b_increment = 0;
+        if (relu_prime(nn, layer, i))
+        {
+            b_increment = grad_a[i] / mini_batch_size;
+        }
+
+        gradient_b[layer][i] += b_increment;
+
+        for (int j = 0; j < nn->layer_sizes[layer - 1]; ++j)
+        {
+            gradient_w[layer][i][j] += b_increment * nn->activations[layer - 1][j];
+        }
+    }
+}
+
+void update_grad_a(NeuralNetwork *nn, int l)
+{
+    if (l <= 1)
+    {
+        return;
+    }
+
+    for (int i = 0; i < nn->layer_sizes[l - 1]; ++i)
+    {
+        nn->current_grad_a[i] = 0;
+        for (int j = 0; j < nn->layer_sizes[l]; ++j)
+        {
+            if (relu_prime(nn, l, j))
+            {
+                nn->current_grad_a[i] += nn->previous_grad_a[j] * nn->weights[l - 1][j][i];
+            }
+        }
+    }
+}
+
+// this functions makes a += at the gradient matrices
+void backpropagation(NeuralNetwork *nn, double ***gradient_w, double **gradient_b, char result, int mini_batch_size)
+{
+    // loading grad_a_l as a^(L)
+    for (int i = 0; i < nn->layer_sizes[nn->amount_layers - 1]; ++i)
+    {
+        nn->current_grad_a[i] = 2 * (nn->activations[nn->amount_layers - 1][i] - y[result][i]);
+    }
+
+    for (int l = nn->amount_layers - 1; l > 0; --l)
+    {
+        // += ∂C/∂w^l; += ∂C/∂b^l;
+        backprop_wb(nn, l, nn->current_grad_a, gradient_w, gradient_b, mini_batch_size);
+
+        // previous <- current
+        swap(nn->current_grad_a, nn->previous_grad_a, double *);
+
+        // updates ∂C/∂a^l (current <- new layer)
+        update_grad_a(nn, l);
+    }
+}
+
+// it would be nice if (mini_batch_size | n) is true. please use this function this way.
+void stochastic_gradient_descent(NeuralNetwork *nn, Dataset *dataset, double learning_rate, int mini_batch_size)
+{
+    shuffle(dataset);
+
+    // initializing gradient vectors
+    double ***gradient_w = malloc(nn->amount_layers * sizeof(double **));
+    double **gradient_b = malloc(nn->amount_layers * sizeof(double *));
+    for (int l = 1; l < nn->amount_layers; ++l)
+    {
+        gradient_w[l] = malloc(nn->layer_sizes[l] * sizeof(double *));
+        for (int i = 0; i < nn->layer_sizes[l]; ++i)
+        {
+            gradient_w[l][i] = malloc(nn->layer_sizes[l - 1] * sizeof(double));
+        }
+
+        gradient_b[l] = malloc(nn->layer_sizes[l] * sizeof(double));
+    }
+
+    for (int i = 0; i < dataset->n; i += mini_batch_size)
+    {
+        FOR_W_B(gradient_w[l_][i_][j_] = 0, gradient_b[l_][i_] = 0);
+
+        for (int j = i; j < i + mini_batch_size; ++j)
+        {
+            compute(nn, dataset->images[j]);
+
+            // essa funçao precisa dar += nos gradientes (scaled multiplicando por 1/minibatchsize)
+            backpropagation(nn, gradient_w, gradient_b, dataset->labels[j], mini_batch_size);
+        }
+
+        update_parameters(nn, gradient_w, gradient_b, learning_rate);
+        printf("Updating weights and biases. Finished training until %dth sample\n", i + mini_batch_size);
+    }
+
+    free_weights_and_biases(gradient_w, gradient_b, nn->amount_layers, nn->layer_sizes);
 }
