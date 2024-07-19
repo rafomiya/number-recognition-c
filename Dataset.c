@@ -63,20 +63,6 @@ void load_dataset(Dataset *dataset)
     }
 }
 
-void destruct_dataset(Dataset *dataset)
-{
-    fclose(dataset->images_file);
-    fclose(dataset->labels_file);
-    for (int i = 0; i < dataset->n; ++i)
-    {
-        free(dataset->images[i]);
-    }
-
-    free(dataset->images);
-    free(dataset->labels);
-    free(dataset);
-}
-
 void print_image(double *image)
 {
     char *scale = " .:-=+*#%@";
@@ -101,4 +87,18 @@ void shuffle(Dataset *dataset)
         swap(dataset->images[j], dataset->images[i], double *);
         swap(dataset->labels[i], dataset->labels[j], char);
     }
+}
+
+void destruct_dataset(Dataset *dataset)
+{
+    fclose(dataset->images_file);
+    fclose(dataset->labels_file);
+    for (int i = 0; i < dataset->n; ++i)
+    {
+        free(dataset->images[i]);
+    }
+
+    free(dataset->images);
+    free(dataset->labels);
+    free(dataset);
 }

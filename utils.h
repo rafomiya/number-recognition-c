@@ -11,6 +11,18 @@
         b = temp_;       \
     } while (0)
 
+/**
+ * Receives an integer and returns it with the endianess swapped.
+ */
 int change_endian(int x);
+
+/**
+ * Seeks the maximum value of the subarray of `arr` going from `p` (inclusive)
+ * to `r` (exclusive) and returns it.
+ */
 int arr_max(int *arr, int p, int r);
-double random();
+
+/**
+ * Returns a random number on the interval [0, 1).
+ */
+double get_random();

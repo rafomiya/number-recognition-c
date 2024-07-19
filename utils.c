@@ -26,7 +26,7 @@ int arr_max(int *arr, int p, int r)
     return result;
 }
 
-double random()
+double get_random()
 {
-    return (double)rand() / (double)RAND_MAX;
+    return rand() / (RAND_MAX + 1.0);
 }

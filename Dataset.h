@@ -11,15 +11,12 @@ typedef enum
     TRAINING
 } DatasetType;
 
-// stores images from the specified dataset on an interval
-// [start, end)
 typedef struct
 {
     FILE *images_file;
     FILE *labels_file;
     double **images;
     char *labels;
-
     int n;
 } Dataset;
 

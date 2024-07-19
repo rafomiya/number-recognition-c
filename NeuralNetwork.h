@@ -35,10 +35,37 @@ typedef struct
 
     // refers to ∂C/(∂a^(l))
     double *current_grad_a;
+
+    // refers to ∂C/(∂a^(l+1))
     double *previous_grad_a;
 } NeuralNetwork;
 
+/**
+ * Initializes a NeuralNetwork with the given `amount_layers` and
+ * `layer_sizes`, and returns a pointer to it.
+ */
 NeuralNetwork *create_neural_network(int amount_layers, int *layer_sizes);
+
+/**
+ * Sets the output layer of the given NeuralNetwork as the output to a given
+ * input, considering the current weights and biases. In other words, "runs"
+ * the NN with the given input.
+ */
 void compute(NeuralNetwork *nn, double *input);
-void stochastic_gradient_descent(NeuralNetwork *nn, Dataset *dataset, double learning_rate, int mini_batch_size);
+
+/**
+ * Trains the NeuralNetwork using the stochastic gradient descent methodology
+ * to minimize the cost function associated with the output layer.
+ * 
+ * @param nn a pointer to the NeuralNetwork
+ * @param dataset a pointer to the Dataset used for trainment
+ * @param learning_rate the rate to scale each iterative step (usually
+ * defaults to .01)
+ * @param batch_size the amount of images used to calculate each step
+ */
+void stochastic_gradient_descent(NeuralNetwork *nn, Dataset *dataset, double learning_rate, int batch_size);
+
+/**
+ * Frees all the dinamically allocated memory associated with a NeuralNetwork
+ */
 void destruct_neural_network(NeuralNetwork *nn);
